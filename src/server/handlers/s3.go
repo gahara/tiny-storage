@@ -36,7 +36,6 @@ func GetFiles(ctx *gin.Context) {
 		ctx.AbortWithError(http.StatusInternalServerError, res.Error)
 	}
 	ctx.IndentedJSON(http.StatusOK, &files)
-
 }
 
 func DeleteFile(ctx *gin.Context) {
