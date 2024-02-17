@@ -5,7 +5,8 @@ import (
 )
 
 type File struct {
-	gorm.Model `json:"-"`
-	Name       string `json:"name"`
-	Path       string `json:"path"`
+	gorm.Model  `json:"-"`
+	StorageName string `json:"storage_name"`
+	Name        string `json:"name"`
+	Path        string `json:"path"`
 }

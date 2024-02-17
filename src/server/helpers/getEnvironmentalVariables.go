@@ -8,11 +8,13 @@ import (
 const pathToEnv = "./config/.env"
 
 type EnvironmentalVariables struct {
-	Env string `mapstructure:"ENV"`
+	Env         string `mapstructure:"ENV"`
+	StoragePath string `mapstructure:"STORAGE_PATH"`
 }
 
 func GetEnvironmentalVariables() EnvironmentalVariables {
 	env := EnvironmentalVariables{}
+
 	viper.SetConfigFile(pathToEnv)
 
 	viper.AutomaticEnv()
@@ -29,5 +31,6 @@ func GetEnvironmentalVariables() EnvironmentalVariables {
 		log.Println(err)
 		return EnvironmentalVariables{}
 	}
+
 	return env
 }

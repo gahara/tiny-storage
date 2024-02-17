@@ -8,6 +8,7 @@ import (
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	router.Use(helpers.SetDBMiddleware())
+	router.Use(helpers.SetEnvMiddleware())
 	RegisterRoutes(router)
 	return router
 }
