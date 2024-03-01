@@ -33,7 +33,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(getFileCmd)
-	getFileCmd.PersistentFlags().String("host", "", "Host to make request to")
+	//getFileCmd.PersistentFlags().String("host", "", "Host to make request to")
 
 	// Here you will define your flags and configuration settings.
 
