@@ -5,9 +5,11 @@ import (
 )
 
 func RegisterRoutes(router *gin.Engine) {
-	router.POST("/", AddFile)
-	router.GET("/", GetFiles)
-	router.GET("/:id", GetFile)
-	router.DELETE("/:id", DeleteFile)
+	router.POST("/files", AddFile)
+	router.POST("/dirs", MakeDir)
+	router.GET("/dirs/:name", GetDir)
+	router.GET("/files", GetFiles)
+	router.GET("/files/:id", GetFile)
+	router.DELETE("files/:id", DeleteFile)
 	router.GET("/ping", Ping)
 }

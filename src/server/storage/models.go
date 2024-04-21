@@ -9,4 +9,5 @@ type File struct {
 	StorageName string `json:"storage_name"`
 	Name        string `json:"name"`
 	Path        string `json:"path"`
+	FullPath    string `json:"-"`
 }
