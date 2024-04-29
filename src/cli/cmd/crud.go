@@ -37,7 +37,7 @@ func Post(filePath, host, dir string) (string, error) {
 	}
 
 	if filePath == "" {
-		return "", errors.New("Filename is not provided")
+		return "", errors.New("filename is not provided")
 	}
 
 	file, err := os.Open(filePath)

@@ -24,8 +24,15 @@ func AddFile(ctx *gin.Context) {
 	}
 	file := form.File["file"][0]
 	dirName := form.Value["path"][0]
+
 	extension := filepath.Ext(file.Filename)
 	fileNameForStorage := uuid.New().String() + extension
+	dirPath := fmt.Sprintf("%s/%s", storagePath, dirName)
+
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": helpers.DirDoesNotExist})
+		return
+	}
 
 	fullPath := fmt.Sprintf("%s/%s/%s", storagePath, dirName, fileNameForStorage)
 
@@ -115,19 +122,14 @@ func MakeDir(ctx *gin.Context) {
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
 	dirPath := fmt.Sprintf("%s/%s/", storagePath, dirBody.Name)
 
-	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		err := os.MkdirAll(dirPath, os.ModePerm)
-		if err == nil {
-			ctx.IndentedJSON(http.StatusOK, gin.H{"message": "Created dir with name " + dirBody.Name})
-		} else {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
-			return
-		}
-	} else {
-		ctx.AbortWithStatusJSON(http.StatusConflict, gin.H{"message": "Dir already exists"})
+	dirCreationText, dirCreationStatus, err := helpers.CreateDir(dirPath, dirBody.Name)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(dirCreationStatus, err.Error())
 		return
 	}
 
+	ctx.IndentedJSON(http.StatusOK, gin.H{"message": dirCreationText})
 }
 
 func GetDir(ctx *gin.Context) {
@@ -137,7 +139,7 @@ func GetDir(ctx *gin.Context) {
 	println(dirPath)
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Dir does not exist"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": helpers.DirDoesNotExist})
 		return
 	} else {
 		var files []storage.File
@@ -147,7 +149,7 @@ func GetDir(ctx *gin.Context) {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, res.Error)
 			return
 		}
-		println(files)
+
 		ctx.IndentedJSON(http.StatusOK, &files)
 	}
 }
