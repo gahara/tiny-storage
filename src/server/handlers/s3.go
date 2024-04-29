@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"log"
@@ -26,7 +27,9 @@ func AddFile(ctx *gin.Context) {
 	extension := filepath.Ext(file.Filename)
 	fileNameForStorage := uuid.New().String() + extension
 
-	if err := ctx.SaveUploadedFile(file, storagePath+dirName+fileNameForStorage); err != nil {
+	fullPath := fmt.Sprintf("%s/%s/%s", storagePath, dirName, fileNameForStorage)
+
+	if err := ctx.SaveUploadedFile(file, fullPath); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
 		return
 	}
@@ -98,12 +101,24 @@ func DeleteFile(ctx *gin.Context) {
 }
 
 func MakeDir(ctx *gin.Context) {
-	dirName := ctx.Query("dn")
+	type dirReq struct {
+		Name string
+	}
+	var dirBody dirReq
 
-	if _, err := os.Stat(dirName + "/"); os.IsNotExist(err) {
-		err := os.MkdirAll(dirName, os.ModeDir)
+	err := ctx.BindJSON(&dirBody)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		return
+	}
+
+	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
+	dirPath := fmt.Sprintf("%s/%s/", storagePath, dirBody.Name)
+
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		err := os.MkdirAll(dirPath, os.ModePerm)
 		if err == nil {
-			ctx.IndentedJSON(http.StatusOK, gin.H{"message": "Created dir with name " + dirName})
+			ctx.IndentedJSON(http.StatusOK, gin.H{"message": "Created dir with name " + dirBody.Name})
 		} else {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
 			return
@@ -117,11 +132,22 @@ func MakeDir(ctx *gin.Context) {
 
 func GetDir(ctx *gin.Context) {
 	dirName := ctx.Param("name")
+	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
+	dirPath := fmt.Sprintf("%s/%s/", storagePath, dirName)
+	println(dirPath)
 
-	if _, err := os.Stat(dirName + "/"); !os.IsNotExist(err) {
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Dir does not exist"})
 		return
 	} else {
-		// return all from db where path = dirName
+		var files []storage.File
+		database := helpers.GetDB(ctx)
+
+		if res := database.Where("path = ?", dirName).Find(&files); res.Error != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, res.Error)
+			return
+		}
+		println(files)
+		ctx.IndentedJSON(http.StatusOK, &files)
 	}
 }

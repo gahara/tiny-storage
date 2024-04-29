@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
@@ -11,13 +12,14 @@ import (
 	"path/filepath"
 )
 
-var defaultHost = "http://localhost:8080/"
+var defaultHost = "http://localhost:8080"
 
 func Get(fileId string, host string) {
 	if host == "" {
 		host = defaultHost
 	}
-	resp, err := http.Get(host + FILE_ROUTE + fileId)
+	uri := fmt.Sprintf("%s/%s/%s", host, FILE_ROUTE, fileId)
+	resp, err := http.Get(uri)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -38,10 +40,6 @@ func Post(filePath, host, dir string) (string, error) {
 		return "", errors.New("Filename is not provided")
 	}
 
-	if dir != "" && dir[len(dir)-1] != '/' {
-		dir = dir + "/"
-	}
-
 	file, err := os.Open(filePath)
 
 	if err != nil {
@@ -54,7 +52,7 @@ func Post(filePath, host, dir string) (string, error) {
 
 	writer := multipart.NewWriter(body)
 
-	log.Println("filepath✅", filepath.Base(filePath))
+	log.Println("✅filepath ", filepath.Base(filePath))
 	fileContent, err := writer.CreateFormFile("file", filepath.Base(filePath))
 
 	if err != nil {
@@ -75,7 +73,9 @@ func Post(filePath, host, dir string) (string, error) {
 		return "", err
 	}
 
-	request, err := http.NewRequest("POST", host+FILE_ROUTE, body)
+	uri := fmt.Sprintf("%s/%s", host, FILE_ROUTE)
+
+	request, err := http.NewRequest("POST", uri, body)
 
 	request.Header.Add("Content-Type", writer.FormDataContentType())
 
@@ -86,7 +86,12 @@ func Post(filePath, host, dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(response.Body)
 
 	if responseBody, err := io.ReadAll(response.Body); err != nil {
 		return "", err

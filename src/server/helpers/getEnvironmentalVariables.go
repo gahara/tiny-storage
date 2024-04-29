@@ -1,11 +1,12 @@
 package helpers
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"log"
 )
 
-const pathToEnv = "./config/.env"
+const pathToEnv = "../../config/.env"
 
 type EnvironmentalVariables struct {
 	Env         string `mapstructure:"ENV"`
@@ -31,6 +32,7 @@ func GetEnvironmentalVariables() EnvironmentalVariables {
 		log.Println(err)
 		return EnvironmentalVariables{}
 	}
-
+	println("_____")
+	fmt.Printf("%+v\n", env)
 	return env
 }
