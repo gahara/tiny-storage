@@ -1,0 +1,120 @@
+definitions:
+  storage.File:
+    properties:
+      name:
+        type: string
+      path:
+        type: string
+      storage_name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /dirs:
+    get:
+      description: Get contents of the dir
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/storage.File'
+            type: array
+        "500":
+          description: Internal Server Error
+      summary: Get dir
+      tags:
+      - dirs
+    post:
+      description: Create dir to store files
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+      summary: Create dir
+      tags:
+      - dirs
+  /files:
+    delete:
+      description: Delete file by id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/storage.File'
+        "500":
+          description: Internal Server Error
+      summary: Delete file
+      tags:
+      - files
+    get:
+      description: Get all files across all dirs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/storage.File'
+            type: array
+        "500":
+          description: Internal Server Error
+      summary: Get all files
+      tags:
+      - files
+    post:
+      description: Get all files across all dirs
+      parameters:
+      - description: File to store
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: path to store things
+        in: formData
+        name: path
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/storage.File'
+            type: array
+        "500":
+          description: Internal Server Error
+      summary: add a file
+      tags:
+      - files
+  /files/{id}:
+    get:
+      description: Get file by id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/storage.File'
+            type: array
+        "500":
+          description: Internal Server Error
+      summary: Get file by id
+      tags:
+      - files
+swagger: "2.0"

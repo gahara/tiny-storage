@@ -12,8 +12,17 @@ import (
 	"s3/src/server/storage"
 )
 
+// AddFile  godoc
+// @Summary add a file
+// @Description Get all files across all dirs
+// @Tags        files
+// @Produce     json
+// @Param       file formData file true "File to store"
+// @Param       path  formData string true "path to store things"
+// @Success     200  {array} storage.File
+// @Failure     500
+// @Router      /files [post]
 func AddFile(ctx *gin.Context) {
-
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
 
 	form, err := ctx.MultipartForm()
@@ -60,6 +69,14 @@ func AddFile(ctx *gin.Context) {
 		"stored_name": dbFile.StorageName, "dir": dbFile.Path})
 }
 
+// GetFile  godoc
+// @Summary Get file by id
+// @Description Get file by id
+// @Tags        files
+// @Produce     json
+// @Success     200  {array} storage.File
+// @Failure     500
+// @Router      /files/{id} [get]
 func GetFile(ctx *gin.Context) {
 	database := helpers.GetDB(ctx)
 	id := ctx.Param("id")
@@ -74,6 +91,14 @@ func GetFile(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, &file)
 }
 
+// GetFiles  godoc
+// @Summary Get all files
+// @Description Get all files across all dirs
+// @Tags        files
+// @Produce     json
+// @Success     200  {array} storage.File
+// @Failure     500
+// @Router      /files [get]
 func GetFiles(ctx *gin.Context) {
 	var files []storage.File
 	database := helpers.GetDB(ctx)
@@ -85,6 +110,14 @@ func GetFiles(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, &files)
 }
 
+// DeleteFile  godoc
+// @Summary Delete file
+// @Description Delete file by id
+// @Tags        files
+// @Produce     json
+// @Success     200 {object} storage.File
+// @Failure     500
+// @Router      /files [delete]
 func DeleteFile(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var fileRecord storage.File
@@ -107,6 +140,14 @@ func DeleteFile(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, &fileRecord)
 }
 
+// MakeDir  godoc
+// @Summary Create dir
+// @Description Create dir to store files
+// @Tags        dirs
+// @Produce     json
+// @Success     200  {object} any
+// @Failure     500
+// @Router      /dirs [post]
 func MakeDir(ctx *gin.Context) {
 	type dirReq struct {
 		Name string
@@ -132,6 +173,14 @@ func MakeDir(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, gin.H{"message": dirCreationText})
 }
 
+// GetDir  godoc
+// @Summary Get dir
+// @Description Get contents of the dir
+// @Tags        dirs
+// @Produce     json
+// @Success     200  {array} storage.File
+// @Failure     500
+// @Router      /dirs [get]
 func GetDir(ctx *gin.Context) {
 	dirName := ctx.Param("name")
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
