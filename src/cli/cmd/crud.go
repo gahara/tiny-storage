@@ -36,9 +36,9 @@ func GetFile(fileId, host string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var file = &File{}
+	var file File
 
-	err = ParseResponse(file, resp)
+	err = ParseResponse(&file, resp)
 	if err != nil {
 		log.Println("Could not parse response")
 		log.Fatalln(err)
@@ -61,11 +61,16 @@ func AddFile(filePath, host, dir string) {
 		log.Fatalln(err)
 	}
 
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}(file)
 
-	body := &bytes.Buffer{}
+	var body bytes.Buffer
 
-	writer := multipart.NewWriter(body)
+	writer := multipart.NewWriter(&body)
 
 	log.Println("✅filepath ", filepath.Base(filePath))
 	fileContent, err := writer.CreateFormFile("file", filepath.Base(filePath))
@@ -90,11 +95,11 @@ func AddFile(filePath, host, dir string) {
 
 	uri := fmt.Sprintf("%s/%s", host, FILE_ROUTE)
 
-	request, err := http.NewRequest("POST", uri, body)
+	request, err := http.NewRequest("POST", uri, &body)
 
 	request.Header.Add("Content-Type", writer.FormDataContentType())
 
-	client := http.Client{}
+	var client http.Client
 
 	response, err := client.Do(request)
 	defer func(Body io.ReadCloser) {
@@ -125,7 +130,7 @@ func ListDir(host, dirname string) {
 	}
 
 	uri := fmt.Sprintf("%s/%s/%s", host, DIR_ROUTE, dirname)
-	log.Println(uri)
+
 	resp, err := http.Get(uri)
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -141,7 +146,6 @@ func ListDir(host, dirname string) {
 
 	err = ParseResponse(&files, resp)
 
-	println("✅", files[0].Name)
 	if err != nil {
 		log.Println("Could not parse response")
 		log.Fatalln(err)
