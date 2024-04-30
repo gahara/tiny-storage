@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -9,6 +10,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"s3/src/internal/utils"
+	"s3/src/pkg"
 )
 
 var defaultHost = "http://localhost:8080"
@@ -38,17 +41,23 @@ func GetFile(fileId, host string) {
 	}
 	var file File
 
-	err = ParseResponse(&file, resp)
+	err = pkg.ParseResponse(&file, resp)
 	if err != nil {
 		log.Println("Could not parse response")
 		log.Fatalln(err)
 	}
-	PrettyPrint(file)
+	pkg.PrettyPrint(file)
 }
 
 func AddFile(filePath, host, dir string) {
 	if host == "" {
 		host = defaultHost
+	}
+
+	err := utils.DirExistsRequest(host, dir)
+
+	if err != nil {
+		log.Fatalln("dir does not exist")
 	}
 
 	if filePath == "" {
@@ -115,13 +124,13 @@ func AddFile(filePath, host, dir string) {
 
 	var fileResponse File
 
-	err = ParseResponse(&fileResponse, response)
+	err = pkg.ParseResponse(&fileResponse, response)
 	if err != nil {
 		log.Println("Could not parse response")
 		log.Fatalln(err)
 	}
 
-	PrettyPrint(fileResponse)
+	pkg.PrettyPrint(fileResponse)
 }
 
 func ListDir(host, dirname string) {
@@ -144,7 +153,7 @@ func ListDir(host, dirname string) {
 	}
 	var files []File
 
-	err = ParseResponse(&files, resp)
+	err = pkg.ParseResponse(&files, resp)
 
 	if err != nil {
 		log.Println("Could not parse response")
@@ -152,7 +161,39 @@ func ListDir(host, dirname string) {
 	}
 
 	for _, file := range files {
-		PrettyPrint(file)
+		pkg.PrettyPrint(file)
 	}
 
+}
+
+func AddDir(host, dirName string) {
+	if host == "" {
+		host = defaultHost
+	}
+
+	uri := fmt.Sprintf("%s/%s", host, DIR_ROUTE)
+
+	values := map[string]string{"name": dirName}
+
+	jsonValue, _ := json.Marshal(values)
+
+	resp, err := http.Post(uri, "application/json", bytes.NewBuffer(jsonValue))
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}(resp.Body)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyString := string(bodyBytes)
+	log.Println(bodyString)
 }

@@ -26,6 +26,7 @@ store/
 *.png
 *.jpg
 *.jpeg
+*.db
 cli
 !cli/
 .DS_Store

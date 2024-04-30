@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"s3/src/server/helpers"
-	"s3/src/server/storage"
+	"s3/src/internal/constants"
+	"s3/src/internal/server/helpers"
+	"s3/src/internal/types"
 )
 
 // AddFile  godoc
@@ -25,8 +26,10 @@ import (
 func AddFile(ctx *gin.Context) {
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
 
+	log.Println("STORAGE", storagePath)
+
 	form, err := ctx.MultipartForm()
-	log.Println(form)
+
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
 		return
@@ -39,7 +42,7 @@ func AddFile(ctx *gin.Context) {
 	dirPath := fmt.Sprintf("%s/%s", storagePath, dirName)
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": helpers.DirDoesNotExist})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": constants.DirDoesNotExist})
 		return
 	}
 
@@ -52,7 +55,7 @@ func AddFile(ctx *gin.Context) {
 
 	database := helpers.GetDB(ctx)
 
-	dbFile := storage.File{
+	dbFile := types.File{
 		Name:        file.Filename,
 		StorageName: fileNameForStorage,
 		Path:        dirName,
@@ -80,7 +83,7 @@ func GetFile(ctx *gin.Context) {
 	database := helpers.GetDB(ctx)
 	id := ctx.Param("id")
 
-	var file storage.File
+	var file types.File
 
 	if res := database.First(&file, id); res.Error != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, res.Error)
@@ -99,7 +102,7 @@ func GetFile(ctx *gin.Context) {
 // @Failure     500
 // @Router      /files [get]
 func GetFiles(ctx *gin.Context) {
-	var files []storage.File
+	var files []types.File
 	database := helpers.GetDB(ctx)
 
 	if res := database.Find(&files); res.Error != nil {
@@ -119,7 +122,7 @@ func GetFiles(ctx *gin.Context) {
 // @Router      /files [delete]
 func DeleteFile(ctx *gin.Context) {
 	id := ctx.Param("id")
-	var fileRecord storage.File
+	var fileRecord types.File
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
 
 	database := helpers.GetDB(ctx)
@@ -187,10 +190,10 @@ func GetDir(ctx *gin.Context) {
 	println(dirPath)
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": helpers.DirDoesNotExist})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": constants.DirAlreadyExists})
 		return
 	} else {
-		var files []storage.File
+		var files []types.File
 		database := helpers.GetDB(ctx)
 
 		if res := database.Where("path = ?", dirName).Find(&files); res.Error != nil {

@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"s3/src/server/helpers"
+	"s3/src/internal/server/helpers"
 )
 
 func SetupRouter() *gin.Engine {

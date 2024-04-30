@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-const pathToEnv = "../../config/.env"
+const pathToEnv = "../../internal/config/.env"
 
 type EnvironmentalVariables struct {
 	Env         string `mapstructure:"ENV"`

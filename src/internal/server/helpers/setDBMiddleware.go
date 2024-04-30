@@ -3,7 +3,7 @@ package helpers
 import (
 	"github.com/gin-gonic/gin"
 	"log"
-	"s3/src/server/storage"
+	"s3/src/internal/server/storage"
 )
 
 const (

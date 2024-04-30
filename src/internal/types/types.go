@@ -1,4 +1,4 @@
-package storage
+package types
 
 import (
 	"gorm.io/gorm"
@@ -10,4 +10,10 @@ type File struct {
 	Name        string `json:"name"`
 	Path        string `json:"path"`
 	FullPath    string `json:"-"`
+}
+
+type Response[T any] struct {
+	ResponseKey     string
+	ResponseMessage string
+	Data            T
 }
