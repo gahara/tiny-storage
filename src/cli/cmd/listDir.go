@@ -4,14 +4,14 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
 )
 
-// utilCmd represents the util command
-var utilCmd = &cobra.Command{
-	Use:   "cmn",
+// listDirCmd represents the listDir command
+var listDirCmd = &cobra.Command{
+	Use:   "list-dir",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -20,20 +20,32 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("util called")
+		host, err := cmd.Flags().GetString("host")
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dirName, err := cmd.Flags().GetString("dir")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ListDir(host, dirName)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(utilCmd)
+	rootCmd.AddCommand(listDirCmd)
+	listDirCmd.Flags().String("dir", "", "Contents of directory dir will be listed")
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// utilCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// listDirCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// utilCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// listDirCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

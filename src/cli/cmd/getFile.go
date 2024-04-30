@@ -27,7 +27,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		Get(fileId, host)
+		GetFile(fileId, host)
 	},
 }
 

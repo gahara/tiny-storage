@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -14,36 +13,52 @@ import (
 
 var defaultHost = "http://localhost:8080"
 
-func Get(fileId string, host string) {
+type File struct {
+	StorageName string `json:"storage_name"`
+	Name        string `json:"name"`
+	Path        string `json:"path"`
+	FullPath    string `json:"-"`
+}
+
+func GetFile(fileId, host string) {
 	if host == "" {
 		host = defaultHost
 	}
 	uri := fmt.Sprintf("%s/%s/%s", host, FILE_ROUTE, fileId)
+
 	resp, err := http.Get(uri)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	var file = &File{}
 
-	if body, err := io.ReadAll(resp.Body); err != nil {
+	err = ParseResponse(file, resp)
+	if err != nil {
+		log.Println("Could not parse response")
 		log.Fatalln(err)
-	} else {
-		println(string(body))
 	}
+	PrettyPrint(file)
 }
 
-func Post(filePath, host, dir string) (string, error) {
+func AddFile(filePath, host, dir string) {
 	if host == "" {
 		host = defaultHost
 	}
 
 	if filePath == "" {
-		return "", errors.New("filename is not provided")
+		log.Fatalln("filename is not provided")
 	}
 
 	file, err := os.Open(filePath)
 
 	if err != nil {
-		return "", err
+		log.Fatalln(err)
 	}
 
 	defer file.Close()
@@ -56,13 +71,13 @@ func Post(filePath, host, dir string) (string, error) {
 	fileContent, err := writer.CreateFormFile("file", filepath.Base(filePath))
 
 	if err != nil {
-		return "", err
+		log.Fatalln(err)
 	}
 
 	err = writer.WriteField("path", dir)
 
 	if err != nil {
-		return "", err
+		log.Fatalln(err)
 	}
 
 	_, err = io.Copy(fileContent, file)
@@ -70,7 +85,7 @@ func Post(filePath, host, dir string) (string, error) {
 	err = writer.Close()
 
 	if err != nil {
-		return "", err
+		log.Fatalln(err)
 	}
 
 	uri := fmt.Sprintf("%s/%s", host, FILE_ROUTE)
@@ -79,13 +94,9 @@ func Post(filePath, host, dir string) (string, error) {
 
 	request.Header.Add("Content-Type", writer.FormDataContentType())
 
-	client := &http.Client{}
+	client := http.Client{}
 
 	response, err := client.Do(request)
-
-	if err != nil {
-		return "", err
-	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -93,10 +104,51 @@ func Post(filePath, host, dir string) (string, error) {
 		}
 	}(response.Body)
 
-	if responseBody, err := io.ReadAll(response.Body); err != nil {
-		return "", err
-	} else {
-		println(string(responseBody))
-		return "", nil
+	if err != nil {
+		log.Fatalln(err)
 	}
+
+	var fileResponse File
+
+	err = ParseResponse(&fileResponse, response)
+	if err != nil {
+		log.Println("Could not parse response")
+		log.Fatalln(err)
+	}
+
+	PrettyPrint(fileResponse)
+}
+
+func ListDir(host, dirname string) {
+	if host == "" {
+		host = defaultHost
+	}
+
+	uri := fmt.Sprintf("%s/%s/%s", host, DIR_ROUTE, dirname)
+	log.Println(uri)
+	resp, err := http.Get(uri)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+	var files []File
+
+	err = ParseResponse(&files, resp)
+
+	println("✅", files[0].Name)
+	if err != nil {
+		log.Println("Could not parse response")
+		log.Fatalln(err)
+	}
+
+	for _, file := range files {
+		PrettyPrint(file)
+	}
+
 }

@@ -65,8 +65,7 @@ func AddFile(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res.Error)
 		return
 	}
-	ctx.IndentedJSON(http.StatusOK, gin.H{"status": "ok", "filename": dbFile.Name,
-		"stored_name": dbFile.StorageName, "dir": dbFile.Path})
+	ctx.IndentedJSON(http.StatusOK, &dbFile)
 }
 
 // GetFile  godoc

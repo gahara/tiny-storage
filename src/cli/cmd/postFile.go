@@ -36,10 +36,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		_, err = Post(filePath, host, dirName)
-		if err != nil {
-			log.Fatal(err)
-		}
+		AddFile(filePath, host, dirName)
 	},
 }
 
