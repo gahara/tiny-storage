@@ -9,8 +9,9 @@ import (
 	"os"
 	"path/filepath"
 	"s3/src/internal/constants"
+	"s3/src/internal/customTypes"
 	"s3/src/internal/server/helpers"
-	"s3/src/internal/types"
+	"s3/src/pkg"
 )
 
 // AddFile  godoc
@@ -20,13 +21,11 @@ import (
 // @Produce     json
 // @Param       file formData file true "File to store"
 // @Param       path  formData string true "path to store things"
-// @Success     200  {array} storage.File
+// @Success     200 {object} customTypes.FilesResponse
 // @Failure     500
 // @Router      /files [post]
 func AddFile(ctx *gin.Context) {
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
-
-	log.Println("STORAGE", storagePath)
 
 	form, err := ctx.MultipartForm()
 
@@ -55,20 +54,22 @@ func AddFile(ctx *gin.Context) {
 
 	database := helpers.GetDB(ctx)
 
-	dbFile := types.File{
+	dbFile := customTypes.File{
 		Name:        file.Filename,
 		StorageName: fileNameForStorage,
 		Path:        dirName,
 		FullPath:    storagePath + fileNameForStorage,
 	}
 
-	res := database.Create(&dbFile)
+	dbResult := database.Create(&dbFile)
 
-	if res.Error != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res.Error)
+	if dbResult.Error != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dbResult.Error)
 		return
 	}
-	ctx.IndentedJSON(http.StatusOK, &dbFile)
+
+	response := pkg.BuildFilesResponse(constants.StatusTextOk, []customTypes.File{dbFile})
+	ctx.IndentedJSON(http.StatusOK, response)
 }
 
 // GetFile  godoc
@@ -76,21 +77,23 @@ func AddFile(ctx *gin.Context) {
 // @Description Get file by id
 // @Tags        files
 // @Produce     json
-// @Success     200  {array} storage.File
+// @Success     200  {object} customTypes.FilesResponse
 // @Failure     500
 // @Router      /files/{id} [get]
 func GetFile(ctx *gin.Context) {
 	database := helpers.GetDB(ctx)
 	id := ctx.Param("id")
 
-	var file types.File
+	var file customTypes.File
 
 	if res := database.First(&file, id); res.Error != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, res.Error)
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusOK, &file)
+	response := pkg.BuildFilesResponse(constants.StatusTextOk, []customTypes.File{file})
+
+	ctx.IndentedJSON(http.StatusOK, response)
 }
 
 // GetFiles  godoc
@@ -98,18 +101,20 @@ func GetFile(ctx *gin.Context) {
 // @Description Get all files across all dirs
 // @Tags        files
 // @Produce     json
-// @Success     200  {array} storage.File
+// @Success     200 {object} customTypes.FilesResponse
 // @Failure     500
 // @Router      /files [get]
 func GetFiles(ctx *gin.Context) {
-	var files []types.File
+	var files []customTypes.File
 	database := helpers.GetDB(ctx)
 
 	if res := database.Find(&files); res.Error != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res.Error)
 		return
 	}
-	ctx.IndentedJSON(http.StatusOK, &files)
+
+	response := pkg.BuildFilesResponse(constants.StatusTextOk, files)
+	ctx.IndentedJSON(http.StatusOK, response)
 }
 
 // DeleteFile  godoc
@@ -117,29 +122,33 @@ func GetFiles(ctx *gin.Context) {
 // @Description Delete file by id
 // @Tags        files
 // @Produce     json
-// @Success     200 {object} storage.File
+// @Success     200 {object} customTypes.FilesResponse
 // @Failure     500
 // @Router      /files [delete]
 func DeleteFile(ctx *gin.Context) {
 	id := ctx.Param("id")
-	var fileRecord types.File
+	var fileRecord customTypes.File
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
 
 	database := helpers.GetDB(ctx)
 
 	if res := database.First(&fileRecord, id); res.Error != nil {
+		log.Println(res.Error)
 		ctx.AbortWithStatusJSON(http.StatusNotFound, res.Error)
 		return
 	}
 
 	if err := os.Remove(storagePath + fileRecord.StorageName); err != nil {
+		log.Println(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
 		return
 	}
 
 	database.Delete(&fileRecord)
 
-	ctx.IndentedJSON(http.StatusOK, &fileRecord)
+	response := pkg.BuildFilesResponse(constants.StatusTextDeleted, customTypes.Files{fileRecord})
+
+	ctx.IndentedJSON(http.StatusOK, response)
 }
 
 // MakeDir  godoc
@@ -171,19 +180,18 @@ func MakeDir(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(dirCreationStatus, err.Error())
 		return
 	}
-
-	ctx.IndentedJSON(http.StatusOK, gin.H{"message": dirCreationText})
+	pkg.ResponseOK(ctx, dirCreationText)
 }
 
-// GetDir  godoc
+// GetDirInsides  godoc
 // @Summary Get dir
 // @Description Get contents of the dir
 // @Tags        dirs
 // @Produce     json
-// @Success     200  {array} storage.File
+// @Success     200 {object} customTypes.FilesResponse
 // @Failure     500
-// @Router      /dirs [get]
-func GetDir(ctx *gin.Context) {
+// @Router      /dirs/{name} [get]
+func GetDirInsides(ctx *gin.Context) {
 	dirName := ctx.Param("name")
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
 	dirPath := fmt.Sprintf("%s/%s/", storagePath, dirName)
@@ -193,14 +201,15 @@ func GetDir(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": constants.DirAlreadyExists})
 		return
 	} else {
-		var files []types.File
+		var files []customTypes.File
 		database := helpers.GetDB(ctx)
 
 		if res := database.Where("path = ?", dirName).Find(&files); res.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, res.Error)
 			return
 		}
+		response := pkg.BuildFilesResponse(constants.StatusTextOk, files)
 
-		ctx.IndentedJSON(http.StatusOK, &files)
+		ctx.IndentedJSON(http.StatusOK, response)
 	}
 }

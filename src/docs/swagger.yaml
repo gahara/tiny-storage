@@ -1,5 +1,5 @@
 definitions:
-  storage.File:
+  customTypes.File:
     properties:
       name:
         type: string
@@ -8,26 +8,22 @@ definitions:
       storage_name:
         type: string
     type: object
+  customTypes.FilesResponse:
+    properties:
+      results:
+        properties:
+          data:
+            items:
+              $ref: '#/definitions/customTypes.File'
+            type: array
+          message:
+            type: string
+        type: object
+    type: object
 info:
   contact: {}
 paths:
   /dirs:
-    get:
-      description: Get contents of the dir
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/storage.File'
-            type: array
-        "500":
-          description: Internal Server Error
-      summary: Get dir
-      tags:
-      - dirs
     post:
       description: Create dir to store files
       produces:
@@ -42,6 +38,21 @@ paths:
       summary: Create dir
       tags:
       - dirs
+  /dirs/{name}:
+    get:
+      description: Get contents of the dir
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/customTypes.FilesResponse'
+        "500":
+          description: Internal Server Error
+      summary: Get dir
+      tags:
+      - dirs
   /files:
     delete:
       description: Delete file by id
@@ -51,7 +62,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/storage.File'
+            $ref: '#/definitions/customTypes.FilesResponse'
         "500":
           description: Internal Server Error
       summary: Delete file
@@ -65,9 +76,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/storage.File'
-            type: array
+            $ref: '#/definitions/customTypes.FilesResponse'
         "500":
           description: Internal Server Error
       summary: Get all files
@@ -92,9 +101,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/storage.File'
-            type: array
+            $ref: '#/definitions/customTypes.FilesResponse'
         "500":
           description: Internal Server Error
       summary: add a file
@@ -109,9 +116,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/storage.File'
-            type: array
+            $ref: '#/definitions/customTypes.FilesResponse'
         "500":
           description: Internal Server Error
       summary: Get file by id

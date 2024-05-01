@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	docs "s3/src/internal/server/docs"
+	docs "s3/src/docs"
 	"s3/src/internal/server/handlers"
 	"s3/src/internal/server/helpers"
 )

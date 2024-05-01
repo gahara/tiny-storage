@@ -16,30 +16,6 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/dirs": {
-            "get": {
-                "description": "Get contents of the dir",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "dirs"
-                ],
-                "summary": "Get dir",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/storage.File"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
             "post": {
                 "description": "Create dir to store files",
                 "produces": [
@@ -62,6 +38,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/dirs/{name}": {
+            "get": {
+                "description": "Get contents of the dir",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dirs"
+                ],
+                "summary": "Get dir",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customTypes.FilesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/files": {
             "get": {
                 "description": "Get all files across all dirs",
@@ -76,10 +75,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/storage.File"
-                            }
+                            "$ref": "#/definitions/customTypes.FilesResponse"
                         }
                     },
                     "500": {
@@ -116,10 +112,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/storage.File"
-                            }
+                            "$ref": "#/definitions/customTypes.FilesResponse"
                         }
                     },
                     "500": {
@@ -140,7 +133,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/storage.File"
+                            "$ref": "#/definitions/customTypes.FilesResponse"
                         }
                     },
                     "500": {
@@ -163,10 +156,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/storage.File"
-                            }
+                            "$ref": "#/definitions/customTypes.FilesResponse"
                         }
                     },
                     "500": {
@@ -177,7 +167,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "storage.File": {
+        "customTypes.File": {
             "type": "object",
             "properties": {
                 "name": {
@@ -188,6 +178,25 @@ const docTemplate = `{
                 },
                 "storage_name": {
                     "type": "string"
+                }
+            }
+        },
+        "customTypes.FilesResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/customTypes.File"
+                            }
+                        },
+                        "message": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         }
