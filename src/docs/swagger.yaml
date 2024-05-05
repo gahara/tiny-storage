@@ -20,6 +20,13 @@ definitions:
             type: string
         type: object
     type: object
+  pkg.HttpError:
+    properties:
+      description:
+        type: string
+      statusCode:
+        type: integer
+    type: object
 info:
   contact: {}
 paths:
@@ -33,8 +40,14 @@ paths:
           description: OK
           schema:
             type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
       summary: Create dir
       tags:
       - dirs
@@ -48,8 +61,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/customTypes.FilesResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
       summary: Get dir
       tags:
       - dirs
@@ -63,8 +82,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/customTypes.FilesResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
       summary: Delete file
       tags:
       - files
@@ -79,6 +104,8 @@ paths:
             $ref: '#/definitions/customTypes.FilesResponse'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
       summary: Get all files
       tags:
       - files
@@ -102,8 +129,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/customTypes.FilesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
       summary: add a file
       tags:
       - files
@@ -117,8 +150,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/customTypes.FilesResponse'
-        "500":
-          description: Internal Server Error
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/pkg.HttpError'
       summary: Get file by id
       tags:
       - files

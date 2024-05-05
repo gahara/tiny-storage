@@ -32,8 +32,17 @@ const docTemplate = `{
                             "type": "object"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
+                    },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
                     }
                 }
             }
@@ -55,8 +64,17 @@ const docTemplate = `{
                             "$ref": "#/definitions/customTypes.FilesResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
+                    },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
                     }
                 }
             }
@@ -79,7 +97,10 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
                     }
                 }
             },
@@ -115,8 +136,17 @@ const docTemplate = `{
                             "$ref": "#/definitions/customTypes.FilesResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
+                    },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
                     }
                 }
             },
@@ -136,8 +166,17 @@ const docTemplate = `{
                             "$ref": "#/definitions/customTypes.FilesResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
+                    },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
                     }
                 }
             }
@@ -159,8 +198,11 @@ const docTemplate = `{
                             "$ref": "#/definitions/customTypes.FilesResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error"
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/pkg.HttpError"
+                        }
                     }
                 }
             }
@@ -197,6 +239,17 @@ const docTemplate = `{
                             "type": "string"
                         }
                     }
+                }
+            }
+        },
+        "pkg.HttpError": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "statusCode": {
+                    "type": "integer"
                 }
             }
         }

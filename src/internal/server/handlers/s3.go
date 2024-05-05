@@ -21,7 +21,8 @@ import (
 // @Param       file formData file true "File to store"
 // @Param       path  formData string true "path to store things"
 // @Success     200 {object} customTypes.FilesResponse
-// @Failure     500
+// @Failure     500 {object} pkg.HttpError
+// @Failure     400 {object} pkg.HttpError
 // @Router      /files [post]
 func AddFile(ctx *gin.Context) {
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
@@ -87,7 +88,7 @@ func AddFile(ctx *gin.Context) {
 // @Tags        files
 // @Produce     json
 // @Success     200  {object} customTypes.FilesResponse
-// @Failure     500
+// @Failure     404 {object} pkg.HttpError
 // @Router      /files/{id} [get]
 func GetFile(ctx *gin.Context) {
 	database := helpers.GetDB(ctx)
@@ -112,7 +113,7 @@ func GetFile(ctx *gin.Context) {
 // @Tags        files
 // @Produce     json
 // @Success     200 {object} customTypes.FilesResponse
-// @Failure     500
+// @Failure     500 {object} pkg.HttpError
 // @Router      /files [get]
 func GetFiles(ctx *gin.Context) {
 	var files []customTypes.File
@@ -134,7 +135,8 @@ func GetFiles(ctx *gin.Context) {
 // @Tags        files
 // @Produce     json
 // @Success     200 {object} customTypes.FilesResponse
-// @Failure     500
+// @Failure     500 {object} pkg.HttpError
+// @Failure     404 {object} pkg.HttpError
 // @Router      /files [delete]
 func DeleteFile(ctx *gin.Context) {
 	id := ctx.Param("id")
@@ -168,7 +170,8 @@ func DeleteFile(ctx *gin.Context) {
 // @Tags        dirs
 // @Produce     json
 // @Success     200  {object} any
-// @Failure     500
+// @Failure     500 {object} pkg.HttpError
+// @Failure     400 {object} pkg.HttpError
 // @Router      /dirs [post]
 func MakeDir(ctx *gin.Context) {
 	type dirReq struct {
@@ -202,7 +205,8 @@ func MakeDir(ctx *gin.Context) {
 // @Tags        dirs
 // @Produce     json
 // @Success     200 {object} customTypes.FilesResponse
-// @Failure     500
+// @Failure     500 {object} pkg.HttpError
+// @Failure     404 {object} pkg.HttpError
 // @Router      /dirs/{name} [get]
 func GetDirInsides(ctx *gin.Context) {
 	dirName := ctx.Param("name")
