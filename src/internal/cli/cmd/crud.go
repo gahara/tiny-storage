@@ -10,18 +10,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"s3/src/internal/customTypes"
 	"s3/src/internal/utils"
 	"s3/src/pkg"
 )
 
 var defaultHost = "http://localhost:8080"
-
-type File struct {
-	StorageName string `json:"storage_name"`
-	Name        string `json:"name"`
-	Path        string `json:"path"`
-	FullPath    string `json:"-"`
-}
 
 func GetFile(fileId, host string) {
 	if host == "" {
@@ -39,14 +33,14 @@ func GetFile(fileId, host string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var file File
+	var fileResp customTypes.FilesResponse
 
-	err = pkg.ParseResponse(&file, resp)
+	err = pkg.ParseResponse(&fileResp, resp)
 	if err != nil {
 		log.Println("Could not parse response")
 		log.Fatalln(err)
 	}
-	pkg.PrettyPrint(file)
+	pkg.PrettyPrint(fileResp.Results.Data)
 }
 
 func AddFile(filePath, host, dir string) {
@@ -122,7 +116,7 @@ func AddFile(filePath, host, dir string) {
 		log.Fatalln(err)
 	}
 
-	var fileResponse File
+	var fileResponse customTypes.FilesResponse
 
 	err = pkg.ParseResponse(&fileResponse, response)
 	if err != nil {
@@ -130,7 +124,7 @@ func AddFile(filePath, host, dir string) {
 		log.Fatalln(err)
 	}
 
-	pkg.PrettyPrint(fileResponse)
+	pkg.PrettyPrint(fileResponse.Results.Data)
 }
 
 func ListDir(host, dirname string) {
@@ -151,14 +145,16 @@ func ListDir(host, dirname string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var files []File
 
-	err = pkg.ParseResponse(&files, resp)
+	var fileResp customTypes.FilesResponse
+
+	err = pkg.ParseResponse(&fileResp, resp)
 
 	if err != nil {
 		log.Println("Could not parse response")
 		log.Fatalln(err)
 	}
+	files := fileResp.Results.Data
 
 	for _, file := range files {
 		pkg.PrettyPrint(file)

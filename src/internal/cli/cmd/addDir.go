@@ -37,6 +37,7 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(addDirCmd)
 	addDirCmd.Flags().String("dir", "", "File will be saved in dir directory")
+	addDirCmd.MarkFlagRequired("dir")
 
 	// Here you will define your flags and configuration settings.
 

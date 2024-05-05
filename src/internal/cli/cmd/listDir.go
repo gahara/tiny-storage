@@ -38,6 +38,7 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(listDirCmd)
 	listDirCmd.Flags().String("dir", "", "Contents of directory dir will be listed")
+	listDirCmd.MarkFlagRequired("dir")
 
 	// Here you will define your flags and configuration settings.
 

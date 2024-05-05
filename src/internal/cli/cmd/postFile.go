@@ -45,6 +45,8 @@ func init() {
 
 	postFileCmd.Flags().String("path", "", "FullPath of a file to send")
 	postFileCmd.Flags().String("dir", "", "File will be saved in dir directory")
+	postFileCmd.MarkFlagRequired("path")
+	postFileCmd.MarkFlagRequired("dir")
 
 	// Here you will define your flags and configuration settings.
 
