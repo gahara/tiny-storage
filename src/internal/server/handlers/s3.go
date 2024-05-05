@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -30,25 +29,34 @@ func AddFile(ctx *gin.Context) {
 	form, err := ctx.MultipartForm()
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		err := pkg.BuildError(constants.BadRequest, http.StatusBadRequest)
+		ctx.Error(err)
 		return
 	}
-	file := form.File["file"][0]
-	dirName := form.Value["path"][0]
+
+	file, dirName, err := pkg.DeconStrucMultipartForm(form)
+
+	if err != nil {
+		err := pkg.BuildError(constants.BadRequest, http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
 
 	extension := filepath.Ext(file.Filename)
 	fileNameForStorage := uuid.New().String() + extension
 	dirPath := fmt.Sprintf("%s/%s", storagePath, dirName)
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": constants.DirDoesNotExist})
+		err := pkg.BuildError(constants.DirDoesNotExist, http.StatusNotFound)
+		ctx.Error(err)
 		return
 	}
 
 	fullPath := fmt.Sprintf("%s/%s/%s", storagePath, dirName, fileNameForStorage)
 
 	if err := ctx.SaveUploadedFile(file, fullPath); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
+		ctx.Error(err)
 		return
 	}
 
@@ -64,7 +72,8 @@ func AddFile(ctx *gin.Context) {
 	dbResult := database.Create(&dbFile)
 
 	if dbResult.Error != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dbResult.Error)
+		err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
+		ctx.Error(err)
 		return
 	}
 
@@ -87,7 +96,8 @@ func GetFile(ctx *gin.Context) {
 	var file customTypes.File
 
 	if res := database.First(&file, id); res.Error != nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, res.Error)
+		err := pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound)
+		ctx.Error(err)
 		return
 	}
 
@@ -109,7 +119,8 @@ func GetFiles(ctx *gin.Context) {
 	database := helpers.GetDB(ctx)
 
 	if res := database.Find(&files); res.Error != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res.Error)
+		err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
+		ctx.Error(err)
 		return
 	}
 
@@ -133,14 +144,14 @@ func DeleteFile(ctx *gin.Context) {
 	database := helpers.GetDB(ctx)
 
 	if res := database.First(&fileRecord, id); res.Error != nil {
-		log.Println(res.Error)
-		ctx.AbortWithStatusJSON(http.StatusNotFound, res.Error)
+		err := pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound)
+		ctx.Error(err)
 		return
 	}
 
 	if err := os.Remove(storagePath + fileRecord.StorageName); err != nil {
-		log.Println(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
+		ctx.Error(err)
 		return
 	}
 
@@ -167,20 +178,22 @@ func MakeDir(ctx *gin.Context) {
 
 	err := ctx.BindJSON(&dirBody)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		err := pkg.BuildError(constants.BadRequest, http.StatusBadRequest)
+		ctx.Error(err)
 		return
 	}
 
 	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
 	dirPath := fmt.Sprintf("%s/%s/", storagePath, dirBody.Name)
 
-	dirCreationText, dirCreationStatus, err := helpers.CreateDir(dirPath, dirBody.Name)
+	err = helpers.CreateDir(dirPath, dirBody.Name)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(dirCreationStatus, err.Error())
+		err := pkg.BuildError(constants.BadRequest, http.StatusBadRequest)
+		ctx.Error(err)
 		return
 	}
-	pkg.ResponseOK(ctx, dirCreationText)
+	pkg.ResponseOK(ctx, constants.DirCreated)
 }
 
 // GetDirInsides  godoc
@@ -198,18 +211,19 @@ func GetDirInsides(ctx *gin.Context) {
 	println(dirPath)
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": constants.DirAlreadyExists})
+		err := pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound)
+		ctx.Error(err)
 		return
 	} else {
 		var files []customTypes.File
 		database := helpers.GetDB(ctx)
 
 		if res := database.Where("path = ?", dirName).Find(&files); res.Error != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, res.Error)
+			err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
+			ctx.Error(err)
 			return
 		}
 		response := pkg.BuildFilesResponse(constants.StatusTextOk, files)
-
 		ctx.IndentedJSON(http.StatusOK, response)
 	}
 }

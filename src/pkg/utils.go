@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"reflect"
 )
@@ -22,4 +23,15 @@ func isSliceOrArray[T any](item T) bool {
 		return true
 	}
 	return false
+}
+
+func DeconStrucMultipartForm(form *multipart.Form) (*multipart.FileHeader, string, error) {
+	file := form.File["file"]
+	dir := form.Value["path"]
+
+	if file != nil && dir != nil {
+		return file[0], dir[0], nil
+	}
+
+	return nil, "", fmt.Errorf("%s %s", "File or path not sent")
 }

@@ -18,6 +18,7 @@ const (
 )
 
 const (
-	FileNotFoundMessage       = "File not found"
+	NotFoundMessage           = "Not found"
 	SomethingWentWrongMessage = "Something went wrong"
+	BadRequest                = "Bad Request"
 )

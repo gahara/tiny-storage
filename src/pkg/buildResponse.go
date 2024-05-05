@@ -18,7 +18,3 @@ func BuildFilesResponse(message customTypes.Message, data customTypes.Files) cus
 	res.Results.Message = message
 	return res
 }
-
-func ErrorResponse() {
-
-}
