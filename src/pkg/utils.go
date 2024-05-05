@@ -33,5 +33,5 @@ func DeconStrucMultipartForm(form *multipart.Form) (*multipart.FileHeader, strin
 		return file[0], dir[0], nil
 	}
 
-	return nil, "", fmt.Errorf("%s %s", "File or path not sent")
+	return nil, "", fmt.Errorf("%s", "File or path not sent")
 }

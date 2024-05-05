@@ -6,7 +6,6 @@
     "paths": {
         "/dirs": {
             "post": {
-                "description": "Create dir to store files",
                 "produces": [
                     "application/json"
                 ],
@@ -38,7 +37,6 @@
         },
         "/dirs/{name}": {
             "get": {
-                "description": "Get contents of the dir",
                 "produces": [
                     "application/json"
                 ],
@@ -70,7 +68,6 @@
         },
         "/files": {
             "get": {
-                "description": "Get all files across all dirs",
                 "produces": [
                     "application/json"
                 ],
@@ -94,7 +91,6 @@
                 }
             },
             "post": {
-                "description": "Get all files across all dirs",
                 "produces": [
                     "application/json"
                 ],
@@ -140,7 +136,6 @@
                 }
             },
             "delete": {
-                "description": "Delete file by id",
                 "produces": [
                     "application/json"
                 ],
@@ -172,7 +167,6 @@
         },
         "/files/{id}": {
             "get": {
-                "description": "Get file by id",
                 "produces": [
                     "application/json"
                 ],

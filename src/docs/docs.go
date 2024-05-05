@@ -17,7 +17,6 @@ const docTemplate = `{
     "paths": {
         "/dirs": {
             "post": {
-                "description": "Create dir to store files",
                 "produces": [
                     "application/json"
                 ],
@@ -49,7 +48,6 @@ const docTemplate = `{
         },
         "/dirs/{name}": {
             "get": {
-                "description": "Get contents of the dir",
                 "produces": [
                     "application/json"
                 ],
@@ -81,7 +79,6 @@ const docTemplate = `{
         },
         "/files": {
             "get": {
-                "description": "Get all files across all dirs",
                 "produces": [
                     "application/json"
                 ],
@@ -105,7 +102,6 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Get all files across all dirs",
                 "produces": [
                     "application/json"
                 ],
@@ -151,7 +147,6 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete file by id",
                 "produces": [
                     "application/json"
                 ],
@@ -183,7 +178,6 @@ const docTemplate = `{
         },
         "/files/{id}": {
             "get": {
-                "description": "Get file by id",
                 "produces": [
                     "application/json"
                 ],

@@ -15,7 +15,7 @@ import (
 
 // AddFile  godoc
 // @Summary add a file
-// @Description Get all files across all dirs
+// @Message Get all files across all dirs
 // @Tags        files
 // @Produce     json
 // @Param       file formData file true "File to store"
@@ -30,16 +30,14 @@ func AddFile(ctx *gin.Context) {
 	form, err := ctx.MultipartForm()
 
 	if err != nil {
-		err := pkg.BuildError(constants.BadRequest, http.StatusBadRequest)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.BadRequest, http.StatusBadRequest, err.Error()))
 		return
 	}
 
 	file, dirName, err := pkg.DeconStrucMultipartForm(form)
 
 	if err != nil {
-		err := pkg.BuildError(constants.BadRequest, http.StatusBadRequest)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.BadRequest, http.StatusBadRequest, err.Error()))
 		return
 	}
 
@@ -48,16 +46,14 @@ func AddFile(ctx *gin.Context) {
 	dirPath := fmt.Sprintf("%s/%s", storagePath, dirName)
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		err := pkg.BuildError(constants.DirDoesNotExist, http.StatusNotFound)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.DirDoesNotExist, http.StatusNotFound, err.Error()))
 		return
 	}
 
 	fullPath := fmt.Sprintf("%s/%s/%s", storagePath, dirName, fileNameForStorage)
 
 	if err := ctx.SaveUploadedFile(file, fullPath); err != nil {
-		err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError, err.Error()))
 		return
 	}
 
@@ -73,8 +69,7 @@ func AddFile(ctx *gin.Context) {
 	dbResult := database.Create(&dbFile)
 
 	if dbResult.Error != nil {
-		err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError, err.Error()))
 		return
 	}
 
@@ -84,7 +79,7 @@ func AddFile(ctx *gin.Context) {
 
 // GetFile  godoc
 // @Summary Get file by id
-// @Description Get file by id
+// @Message Get file by id
 // @Tags        files
 // @Produce     json
 // @Success     200  {object} customTypes.FilesResponse
@@ -97,8 +92,7 @@ func GetFile(ctx *gin.Context) {
 	var file customTypes.File
 
 	if res := database.First(&file, id); res.Error != nil {
-		err := pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound, res.Error.Error()))
 		return
 	}
 
@@ -109,7 +103,7 @@ func GetFile(ctx *gin.Context) {
 
 // GetFiles  godoc
 // @Summary Get all files
-// @Description Get all files across all dirs
+// @Message Get all files across all dirs
 // @Tags        files
 // @Produce     json
 // @Success     200 {object} customTypes.FilesResponse
@@ -120,8 +114,7 @@ func GetFiles(ctx *gin.Context) {
 	database := helpers.GetDB(ctx)
 
 	if res := database.Find(&files); res.Error != nil {
-		err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError, res.Error.Error()))
 		return
 	}
 
@@ -131,7 +124,7 @@ func GetFiles(ctx *gin.Context) {
 
 // DeleteFile  godoc
 // @Summary Delete file
-// @Description Delete file by id
+// @Message Delete file by id
 // @Tags        files
 // @Produce     json
 // @Success     200 {object} customTypes.FilesResponse
@@ -146,14 +139,12 @@ func DeleteFile(ctx *gin.Context) {
 	database := helpers.GetDB(ctx)
 
 	if res := database.First(&fileRecord, id); res.Error != nil {
-		err := pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound, res.Error.Error()))
 		return
 	}
 
 	if err := os.Remove(storagePath + fileRecord.StorageName); err != nil {
-		err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError, err.Error()))
 		return
 	}
 
@@ -166,7 +157,7 @@ func DeleteFile(ctx *gin.Context) {
 
 // MakeDir  godoc
 // @Summary Create dir
-// @Description Create dir to store files
+// @Message Create dir to store files
 // @Tags        dirs
 // @Produce     json
 // @Success     200  {object} any
@@ -181,8 +172,7 @@ func MakeDir(ctx *gin.Context) {
 
 	err := ctx.BindJSON(&dirBody)
 	if err != nil {
-		err := pkg.BuildError(constants.BadRequest, http.StatusBadRequest)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.BadRequest, http.StatusBadRequest, err.Error()))
 		return
 	}
 
@@ -192,8 +182,7 @@ func MakeDir(ctx *gin.Context) {
 	err = helpers.CreateDir(dirPath, dirBody.Name)
 
 	if err != nil {
-		err := pkg.BuildError(constants.BadRequest, http.StatusBadRequest)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.BadRequest, http.StatusBadRequest, err.Error()))
 		return
 	}
 	pkg.ResponseOK(ctx, constants.DirCreated)
@@ -201,7 +190,7 @@ func MakeDir(ctx *gin.Context) {
 
 // GetDirInsides  godoc
 // @Summary Get dir
-// @Description Get contents of the dir
+// @Message Get contents of the dir
 // @Tags        dirs
 // @Produce     json
 // @Success     200 {object} customTypes.FilesResponse
@@ -215,16 +204,14 @@ func GetDirInsides(ctx *gin.Context) {
 	println(dirPath)
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		err := pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound)
-		ctx.Error(err)
+		ctx.Error(pkg.BuildError(constants.NotFoundMessage, http.StatusNotFound, err.Error()))
 		return
 	} else {
 		var files []customTypes.File
 		database := helpers.GetDB(ctx)
 
 		if res := database.Where("path = ?", dirName).Find(&files); res.Error != nil {
-			err := pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError)
-			ctx.Error(err)
+			ctx.Error(pkg.BuildError(constants.SomethingWentWrong, http.StatusInternalServerError, res.Error.Error()))
 			return
 		}
 		response := pkg.BuildFilesResponse(constants.StatusTextOk, files)
