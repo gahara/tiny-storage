@@ -30,4 +30,4 @@ store/
 cli
 !cli/
 .DS_Store
-#config/
+congig/
