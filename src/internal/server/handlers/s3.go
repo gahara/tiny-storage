@@ -25,7 +25,7 @@ import (
 // @Failure     400 {object} pkg.HttpError
 // @Router      /files [post]
 func AddFile(ctx *gin.Context) {
-	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
+	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(customTypes.EnvironmentalVariables).StoragePath
 
 	form, err := ctx.MultipartForm()
 
@@ -134,7 +134,7 @@ func GetFiles(ctx *gin.Context) {
 func DeleteFile(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var fileRecord customTypes.File
-	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
+	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(customTypes.EnvironmentalVariables).StoragePath
 
 	database := helpers.GetDB(ctx)
 
@@ -176,7 +176,8 @@ func MakeDir(ctx *gin.Context) {
 		return
 	}
 
-	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
+	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(customTypes.EnvironmentalVariables).StoragePath
+
 	dirPath := fmt.Sprintf("%s/%s/", storagePath, dirBody.Name)
 
 	err = helpers.CreateDir(dirPath, dirBody.Name)
@@ -185,6 +186,8 @@ func MakeDir(ctx *gin.Context) {
 		ctx.Error(pkg.BuildError(constants.BadRequest, http.StatusBadRequest, err.Error()))
 		return
 	}
+
+	//TODO: bring this to the common format
 	pkg.ResponseOK(ctx, constants.DirCreated)
 }
 
@@ -199,7 +202,7 @@ func MakeDir(ctx *gin.Context) {
 // @Router      /dirs/{name} [get]
 func GetDirInsides(ctx *gin.Context) {
 	dirName := ctx.Param("name")
-	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(helpers.EnvironmentalVariables).StoragePath
+	storagePath := ctx.MustGet(helpers.ENIRONMENTAL_VARIABLES_KEY).(customTypes.EnvironmentalVariables).StoragePath
 	dirPath := fmt.Sprintf("%s/%s/", storagePath, dirName)
 	println(dirPath)
 

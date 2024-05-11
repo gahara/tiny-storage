@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"s3/src/internal/constants"
 	"s3/src/internal/customTypes"
 	"s3/src/internal/utils"
 	"s3/src/pkg"
@@ -37,7 +38,7 @@ func GetFile(fileId, host string) {
 
 	err = pkg.ParseResponse(&fileResp, resp)
 	if err != nil {
-		log.Println("Could not parse response")
+		log.Println(constants.CouldNotParseResponse)
 		log.Fatalln(err)
 	}
 	pkg.PrettyPrint(fileResp.Results.Data)
@@ -51,11 +52,11 @@ func AddFile(filePath, host, dir string) {
 	err := utils.DirExistsRequest(host, dir)
 
 	if err != nil {
-		log.Fatalln("dir does not exist")
+		log.Fatalln(constants.DirDoesNotExist)
 	}
 
 	if filePath == "" {
-		log.Fatalln("filename is not provided")
+		log.Fatalln(constants.FileNameWasNotProvided)
 	}
 
 	file, err := os.Open(filePath)
@@ -75,7 +76,6 @@ func AddFile(filePath, host, dir string) {
 
 	writer := multipart.NewWriter(&body)
 
-	log.Println("✅filepath ", filepath.Base(filePath))
 	fileContent, err := writer.CreateFormFile("file", filepath.Base(filePath))
 
 	if err != nil {
@@ -120,7 +120,7 @@ func AddFile(filePath, host, dir string) {
 
 	err = pkg.ParseResponse(&fileResponse, response)
 	if err != nil {
-		log.Println("Could not parse response")
+		log.Println(constants.CouldNotParseResponse)
 		log.Fatalln(err)
 	}
 
@@ -151,7 +151,7 @@ func ListDir(host, dirname string) {
 	err = pkg.ParseResponse(&fileResp, resp)
 
 	if err != nil {
-		log.Println("Could not parse response")
+		log.Println(constants.CouldNotParseResponse)
 		log.Fatalln(err)
 	}
 	files := fileResp.Results.Data

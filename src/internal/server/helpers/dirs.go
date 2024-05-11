@@ -7,6 +7,7 @@ import (
 )
 
 func CreateDir(dirPath, dirName string) error {
+
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 		err := os.MkdirAll(dirPath, os.ModePerm)
 		if err == nil {

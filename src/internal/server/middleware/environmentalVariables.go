@@ -3,14 +3,14 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"s3/src/internal/customTypes"
 	"s3/src/internal/server/helpers"
 )
 
-func SetEnvMiddleware() gin.HandlerFunc {
-	envs := helpers.GetEnvironmentalVariables()
-	log.Println("Get environmental variables")
+func SetEnvMiddleware(envVars customTypes.EnvironmentalVariables) gin.HandlerFunc {
+	log.Println("set environmental variables")
 	return func(context *gin.Context) {
-		context.Set(helpers.ENIRONMENTAL_VARIABLES_KEY, envs)
+		context.Set(helpers.ENIRONMENTAL_VARIABLES_KEY, envVars)
 		context.Next()
 	}
 }

@@ -7,12 +7,12 @@ import (
 	"s3/src/internal/server/helpers"
 )
 
-var EnvironmentarVariables = helpers.GetEnvironmentalVariables()
+var environmentalVariables = helpers.GetEnvironmentalVariables()
 
 func main() {
 	fmt.Println("Starting...")
 
-	router := handlers.SetupRouter()
+	router := handlers.SetupRouter(environmentalVariables)
 	docs.SwaggerInfo.BasePath = "/"
 
 	router.Run(":8080")
